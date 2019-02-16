@@ -1,8 +1,22 @@
 from PIL import Image
 from numpy import *
 from pylab import *
-import os
+import cv2
+# import os
 
+# def process_image(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5"):
+#     """ Process an image and save the results in a file. """
+
+#     if imagename[-3:] != 'pgm':
+#         # create a pgm file
+#         im = Image.open(imagename).convert('L')
+#         im.save('tmp.pgm')
+#         imagename = 'tmp.pgm'
+
+#     cmmd = str("sift "+imagename+" --output="+resultname+
+#                 " "+params)
+#     os.system(cmmd)
+#     print 'processed', imagename, 'to', resultname
 
 def process_image(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5"):
     """ Process an image and save the results in a file. """
@@ -13,9 +27,17 @@ def process_image(imagename,resultname,params="--edge-thresh 10 --peak-thresh 5"
         im.save('tmp.pgm')
         imagename = 'tmp.pgm'
 
-    cmmd = str("sift "+imagename+" --output="+resultname+
-                " "+params)
-    os.system(cmmd)
+    img = cv2.imread('tmp.pgm')
+    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+    sift = cv2.xfeatures2d.SIFT_create()
+    kpsList = []
+    kps , des = sift.detectAndCompute(gray, None)
+    for kp in kps:
+        kpsList.append([kp.pt[0], kp.pt[1], kp.response, kp.angle])
+    kpsList = array(kpsList)
+    ret = np.hstack((kpsList, des))
+    savetxt(resultname, ret)
     print 'processed', imagename, 'to', resultname
 
 
